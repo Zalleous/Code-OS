@@ -143,7 +143,7 @@ chmod +x boot-setup/*.sh
 **Optional Packages**:
 - CPU microcode (`intel-ucode` or `amd-ucode`)
 - Development tools (`linux-headers`, `dkms`)
-- System utilities (`htop`, `neofetch`, `reflector`)
+- System utilities (`htop`, `fastfetch`, `reflector`)
 - Alternative shells (`zsh`, `fish`)
 
 **What it does**:

@@ -32,7 +32,7 @@ OPTIONAL_PACKAGES=(
     "wget"               # Web downloader
     "curl"               # Another web tool
     "htop"               # System monitor
-    "neofetch"           # System information tool
+    "fastfetch"          # System information tool
     "bash-completion"    # Bash auto-completion
     "zsh"                # Z shell
     "fish"               # Friendly interactive shell
