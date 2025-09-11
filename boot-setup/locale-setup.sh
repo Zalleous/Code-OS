@@ -78,20 +78,38 @@ setup_locale() {
     # Enable the locale in the target system
     echo "Enabling locale in target system..."
     
-    # Uncomment the locale in locale.gen
-    arch-chroot /mnt sed -i "s/^#${SELECTED_LOCALE}/${SELECTED_LOCALE}/" /etc/locale.gen
-    
-    # Also enable en_US.UTF-8 as fallback if it's not the selected locale
-    if [[ "$SELECTED_LOCALE" != "en_US.UTF-8" ]]; then
-        arch-chroot /mnt sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+    # Check if we're in chroot or need to use arch-chroot
+    if [ -f /etc/locale.gen ]; then
+        # We're in chroot environment
+        sed -i "s/^#${SELECTED_LOCALE}/${SELECTED_LOCALE}/" /etc/locale.gen
+        
+        # Also enable en_US.UTF-8 as fallback if it's not the selected locale
+        if [[ "$SELECTED_LOCALE" != "en_US.UTF-8" ]]; then
+            sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+        fi
+        
+        # Generate locales
+        echo "Generating locales..."
+        locale-gen
+        
+        # Set system locale
+        echo "LANG=$SELECTED_LOCALE" > /etc/locale.conf
+    else
+        # We're in live environment, use arch-chroot
+        sed -i "s/^#${SELECTED_LOCALE}/${SELECTED_LOCALE}/" /mnt/etc/locale.gen
+        
+        # Also enable en_US.UTF-8 as fallback if it's not the selected locale
+        if [[ "$SELECTED_LOCALE" != "en_US.UTF-8" ]]; then
+            sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /mnt/etc/locale.gen
+        fi
+        
+        # Generate locales
+        echo "Generating locales..."
+        arch-chroot /mnt locale-gen
+        
+        # Set system locale
+        echo "LANG=$SELECTED_LOCALE" > /mnt/etc/locale.conf
     fi
-    
-    # Generate locales
-    echo "Generating locales..."
-    arch-chroot /mnt locale-gen
-    
-    # Set system locale
-    echo "LANG=$SELECTED_LOCALE" > /mnt/etc/locale.conf
     
     echo "✅ Locale set to $SELECTED_LOCALE"
 }
@@ -151,7 +169,13 @@ setup_keymap() {
     echo "Selected keymap: $SELECTED_KEYMAP"
     
     # Set console keymap
-    echo "KEYMAP=$SELECTED_KEYMAP" > /mnt/etc/vconsole.conf
+    if [ -f /etc/vconsole.conf ] || [ ! -d /mnt ]; then
+        # We're in chroot or no /mnt exists
+        echo "KEYMAP=$SELECTED_KEYMAP" > /etc/vconsole.conf
+    else
+        # We're in live environment
+        echo "KEYMAP=$SELECTED_KEYMAP" > /mnt/etc/vconsole.conf
+    fi
     
     echo "✅ Keyboard layout set to $SELECTED_KEYMAP"
 }
@@ -189,14 +213,27 @@ setup_hostname() {
     echo "Selected hostname: $hostname"
     
     # Set hostname
-    echo "$hostname" > /mnt/etc/hostname
-    
-    # Configure hosts file
-    cat > /mnt/etc/hosts << EOF
+    if [ -f /etc/hostname ] || [ ! -d /mnt ]; then
+        # We're in chroot or no /mnt exists
+        echo "$hostname" > /etc/hostname
+        
+        # Configure hosts file
+        cat > /etc/hosts << EOF
 127.0.0.1   localhost
 ::1         localhost
 127.0.1.1   $hostname.localdomain $hostname
 EOF
+    else
+        # We're in live environment
+        echo "$hostname" > /mnt/etc/hostname
+        
+        # Configure hosts file
+        cat > /mnt/etc/hosts << EOF
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   $hostname.localdomain $hostname
+EOF
+    fi
     
     echo "✅ Hostname set to $hostname"
 }

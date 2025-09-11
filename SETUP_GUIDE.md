@@ -9,9 +9,13 @@ The installation process is divided into several modular scripts, each handling 
 1. **network-setup.sh** - Network connectivity configuration
 2. **disk-setup.sh** - Disk partitioning and filesystem setup
 3. **base-setup.sh** - Base system installation
-4. **locale-setup.sh** - Language, timezone, and locale configuration
-5. **grub-setup.sh** - Bootloader installation and configuration
-6. **user-setup.sh** - User account creation and configuration
+4. **locale-setup.sh** - Language, keyboard, and hostname configuration
+5. **clock-setup.sh** - Timezone and system clock configuration
+6. **grub-setup.sh** - Bootloader installation and configuration
+7. **user-setup.sh** - User account creation and configuration
+
+Additionally, there's a main installation script:
+- **install-arch.sh** - Orchestrates the entire installation process
 
 ## Prerequisites
 
@@ -24,16 +28,22 @@ The installation process is divided into several modular scripts, each handling 
 
 1. Boot from Arch Linux ISO
 2. Clone or download these scripts
-3. Make scripts executable: `chmod +x boot-setup/*.sh`
-4. Run scripts in order:
+3. Run the main installation script as root:
    ```bash
-   ./boot-setup/network-setup.sh
-   ./boot-setup/disk-setup.sh
-   ./boot-setup/base-setup.sh
-   ./boot-setup/locale-setup.sh
-   ./boot-setup/grub-setup.sh
-   ./boot-setup/user-setup.sh
+   sudo ./install-arch.sh
    ```
+
+Alternatively, you can run individual scripts manually:
+```bash
+chmod +x boot-setup/*.sh
+./boot-setup/network-setup.sh
+./boot-setup/disk-setup.sh
+./boot-setup/base-setup.sh
+./boot-setup/locale-setup.sh
+./boot-setup/clock-setup.sh
+./boot-setup/grub-setup.sh
+./boot-setup/user-setup.sh
+```
 
 ## Detailed Script Documentation
 
@@ -146,14 +156,14 @@ The installation process is divided into several modular scripts, each handling 
 
 ### 4. locale-setup.sh
 
-**Purpose**: Configures system language, timezone, keyboard, and hostname.
+**Purpose**: Configures system language, keyboard, and hostname.
 
 **Features**:
-- Interactive timezone selection with region/city browsing
 - Support for common locales with custom option
 - Keyboard layout configuration
 - Hostname validation and setup
 - Automatic locale generation
+- Works in both live and chroot environments
 - Comprehensive error checking
 
 **Usage**:
@@ -162,18 +172,39 @@ The installation process is divided into several modular scripts, each handling 
 ```
 
 **Configuration Options**:
-- **Timezone**: Interactive selection from zoneinfo database
 - **Locale**: Common locales (en_US.UTF-8, de_DE.UTF-8, etc.) or custom
 - **Keyboard**: Common layouts (US, UK, German, French, etc.) or custom
 - **Hostname**: User-defined system name with validation
 
 **What it does**:
-1. Sets system timezone and syncs hardware clock
-2. Enables selected locale and generates locale files
-3. Configures console keyboard layout
-4. Sets system hostname and updates hosts file
+1. Enables selected locale and generates locale files
+2. Configures console keyboard layout
+3. Sets system hostname and updates hosts file
 
-### 5. grub-setup.sh
+### 5. clock-setup.sh
+
+**Purpose**: Configures system timezone and hardware clock.
+
+**Features**:
+- Interactive timezone selection with region/city browsing
+- Hardware clock synchronization
+- Works in both live and chroot environments
+- Automatic timezone detection and setup
+
+**Usage**:
+```bash
+./boot-setup/clock-setup.sh
+```
+
+**Configuration Options**:
+- **Timezone**: Interactive selection from zoneinfo database
+
+**What it does**:
+1. Sets system timezone
+2. Syncs hardware clock with system time
+3. Configures timezone for target system
+
+### 6. grub-setup.sh
 
 **Purpose**: Installs and configures the GRUB bootloader.
 
@@ -208,7 +239,7 @@ The installation process is divided into several modular scripts, each handling 
 - `systemd-timesyncd` - Time synchronization
 - `fstrim.timer` - SSD maintenance
 
-### 6. user-setup.sh
+### 7. user-setup.sh
 
 **Purpose**: Creates and configures a user account with administrative privileges.
 
@@ -243,6 +274,37 @@ The installation process is divided into several modular scripts, each handling 
 **AUR Helpers**:
 - **yay**: Go-based AUR helper (recommended)
 - **paru**: Rust-based AUR helper
+
+### 8. install-arch.sh
+
+**Purpose**: Main installation script that orchestrates the entire Arch Linux installation process.
+
+**Features**:
+- Automated execution of all installation scripts in correct order
+- Environment validation and prerequisite checking
+- Error handling and recovery guidance
+- Progress tracking and user feedback
+- Interactive confirmation at each step
+- Colored output for better readability
+
+**Usage**:
+```bash
+sudo ./install-arch.sh
+```
+
+**What it does**:
+1. Validates installation environment
+2. Checks for required scripts and permissions
+3. Provides installation summary and confirmation
+4. Executes each installation script in sequence
+5. Handles errors and provides recovery instructions
+6. Offers automatic reboot after completion
+
+**Features**:
+- **Step-by-step execution**: Pauses between each major step
+- **Error recovery**: Provides clear instructions if a step fails
+- **Environment checks**: Ensures running on Arch ISO as root
+- **Automatic cleanup**: Offers to unmount and reboot after installation
 
 ## Error Handling
 
