@@ -61,22 +61,9 @@ check_mount() {
     echo "✅ Mount points verified."
 }
 
-# Update pacman mirrors for better download speeds
-update_mirrors() {
-    echo "Updating pacman mirrors for better download speeds..."
-    
-    if command -v reflector >/dev/null 2>&1; then
-        echo "Using reflector to rank mirrors..."
-        reflector --country "United States,Germany,France,United Kingdom" \
-                  --age 12 \
-                  --protocol https \
-                  --sort rate \
-                  --save /etc/pacman.d/mirrorlist
-    else
-        echo "Reflector not available, using default mirrors."
-    fi
-    
-    # Update package database
+# Update package database
+update_package_database() {
+    echo "Updating package database..."
     pacman -Sy
 }
 
@@ -152,7 +139,7 @@ main() {
     echo "========================================================="
     
     check_mount
-    update_mirrors
+    update_package_database
     select_optional_packages
     
     echo ""
