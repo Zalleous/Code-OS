@@ -32,7 +32,7 @@ setupClock() {
     fi
     
     echo "Available timezone regions:"
-    regions=$(echo "$timezones" | cut -d'/' -f1 | sort -u | head -20)
+    regions=$(echo "$timezones" | cut -d'/' -f1 | sort -u)
     echo "$regions" | nl
     echo ""
     
@@ -51,7 +51,7 @@ setupClock() {
     echo "========================================================="
     
     echo "Available zones in $region:"
-    zones=$(echo "$timezones" | grep "^$region/" | cut -d'/' -f2- | head -20)
+    zones=$(echo "$timezones" | grep "^$region/" | cut -d'/' -f2-)
     echo "$zones" | nl
     echo ""
 
@@ -106,25 +106,9 @@ setupClock() {
 main() {
     resetUI
     
-    while true; do
-        read -p "Do you want to configure the timezone? (y/n): " yesNo
-        
-        case "$yesNo" in
-            [Yy]*)
-                setupClock
-                resetUI
-                break
-                ;;
-            [Nn]*)
-                echo "Skipping timezone configuration."
-                break
-                ;;
-            *)
-                echo "Please answer y/Y or n/N"
-                ;;
-        esac
-    done
-    
+    echo "Configuring system timezone..."
+    setupClock
+    resetUI
     echo "Clock setup complete."
 }
 

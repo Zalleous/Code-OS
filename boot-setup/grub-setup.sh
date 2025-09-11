@@ -212,11 +212,7 @@ main() {
     detect_boot_mode
     
     echo ""
-    read -p "Do you want to continue with GRUB installation? (y/n): " proceed
-    if [[ ! "$proceed" =~ ^[Yy]$ ]]; then
-        echo "GRUB setup cancelled."
-        exit 0
-    fi
+    echo "Proceeding with GRUB installation..."
     
     # Install GRUB based on boot mode
     if [ "$BOOT_MODE" = "uefi" ]; then
