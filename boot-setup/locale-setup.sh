@@ -3,7 +3,6 @@
 # --- Configuration ---
 # Default locale settings
 DEFAULT_LOCALE="en_US.UTF-8"
-DEFAULT_TIMEZONE="UTC"
 DEFAULT_KEYMAP="us"
 
 # Available locales (most common ones)
@@ -28,85 +27,23 @@ set -u
 
 # --- Functions ---
 
-# Check if we're in the right environment
-check_environment() {
-    if ! mountpoint -q /mnt; then
-        echo "❌ Error: /mnt is not mounted. Please run disk-setup.sh and base-setup.sh first."
-        exit 1
-    fi
-    
-    if [ ! -f /mnt/etc/fstab ]; then
-        echo "❌ Error: Base system not installed. Please run base-setup.sh first."
-        exit 1
-    fi
-    
-    echo "✅ Environment check passed."
-}
-
-# Set up timezone
-setup_timezone() {
-    echo "========================================================="
-    echo "                   Timezone Configuration"
-    echo "========================================================="
-    
-    echo "Available timezone regions:"
-    ls /usr/share/zoneinfo/ | grep -v "posix\|right" | head -20
-    echo "... (and more)"
-    echo ""
-    
-    while true; do
-        read -p "Enter your timezone region (e.g., America, Europe, Asia) or 'list' to see all: " region
-        
-        if [[ "$region" == "list" ]]; then
-            echo "Available regions:"
-            ls /usr/share/zoneinfo/ | grep -v "posix\|right" | column
-            continue
-        fi
-        
-        if [ -d "/usr/share/zoneinfo/$region" ]; then
-            break
-        else
-            echo "❌ Region '$region' not found. Please try again."
-        fi
-    done
-    
-    echo ""
-    echo "Available cities/zones in $region:"
-    ls "/usr/share/zoneinfo/$region" | head -20
-    if [ $(ls "/usr/share/zoneinfo/$region" | wc -l) -gt 20 ]; then
-        echo "... (and more)"
-    fi
-    echo ""
-    
-    while true; do
-        read -p "Enter your city/zone (e.g., New_York, London, Tokyo): " city
-        
-        if [ -f "/usr/share/zoneinfo/$region/$city" ]; then
-            SELECTED_TIMEZONE="$region/$city"
-            break
-        else
-            echo "❌ City '$city' not found in region '$region'. Please try again."
-            echo "Available options:"
-            ls "/usr/share/zoneinfo/$region" | grep -i "$city" || echo "No matches found."
-        fi
-    done
-    
-    echo ""
-    echo "Selected timezone: $SELECTED_TIMEZONE"
-    
-    # Set timezone in the target system
-    echo "Setting timezone in target system..."
-    arch-chroot /mnt ln -sf "/usr/share/zoneinfo/$SELECTED_TIMEZONE" /etc/localtime
-    arch-chroot /mnt hwclock --systohc
-    
-    echo "✅ Timezone set to $SELECTED_TIMEZONE"
-}
-
 # Set up locale
 setup_locale() {
     echo "========================================================="
     echo "                    Locale Configuration"
     echo "========================================================="
+    
+    # Check if locale is already configured
+    if [ -f /mnt/etc/locale.conf ]; then
+        current_locale=$(grep "^LANG=" /mnt/etc/locale.conf | cut -d= -f2)
+        echo "Current locale: $current_locale"
+        read -p "Do you want to change the locale configuration? (y/n): " change_locale
+        if [[ ! "$change_locale" =~ ^[Yy]$ ]]; then
+            echo "Keeping current locale configuration."
+            SELECTED_LOCALE="$current_locale"
+            return 0
+        fi
+    fi
     
     echo "Common locales:"
     for i in "${!COMMON_LOCALES[@]}"; do
@@ -165,6 +102,18 @@ setup_keymap() {
     echo "                  Keyboard Configuration"
     echo "========================================================="
     
+    # Check if keymap is already configured
+    if [ -f /mnt/etc/vconsole.conf ]; then
+        current_keymap=$(grep "^KEYMAP=" /mnt/etc/vconsole.conf | cut -d= -f2)
+        echo "Current keymap: $current_keymap"
+        read -p "Do you want to change the keyboard layout? (y/n): " change_keymap
+        if [[ ! "$change_keymap" =~ ^[Yy]$ ]]; then
+            echo "Keeping current keyboard layout."
+            SELECTED_KEYMAP="$current_keymap"
+            return 0
+        fi
+    fi
+    
     echo "Common keyboard layouts:"
     echo "  1. us (US English)"
     echo "  2. uk (UK English)"
@@ -213,6 +162,18 @@ setup_hostname() {
     echo "                   Hostname Configuration"
     echo "========================================================="
     
+    # Check if hostname is already configured
+    if [ -f /mnt/etc/hostname ]; then
+        current_hostname=$(cat /mnt/etc/hostname)
+        echo "Current hostname: $current_hostname"
+        read -p "Do you want to change the hostname? (y/n): " change_hostname
+        if [[ ! "$change_hostname" =~ ^[Yy]$ ]]; then
+            echo "Keeping current hostname."
+            hostname="$current_hostname"
+            return 0
+        fi
+    fi
+    
     while true; do
         read -p "Enter hostname for this system: " hostname
         
@@ -246,16 +207,13 @@ main() {
     echo "         Arch Linux Locale and Language Setup"
     echo "========================================================="
     echo "This script will configure:"
-    echo "  1. System timezone"
-    echo "  2. System locale (language)"
-    echo "  3. Keyboard layout"
-    echo "  4. System hostname"
+    echo "  1. System locale (language)"
+    echo "  2. Keyboard layout"
+    echo "  3. System hostname"
+    echo ""
+    echo "Note: Timezone configuration is handled separately."
     echo ""
     
-    check_environment
-    
-    setup_timezone
-    echo ""
     setup_locale
     echo ""
     setup_keymap
@@ -267,14 +225,11 @@ main() {
     echo "✅ Locale and language setup complete!"
     echo "========================================================="
     echo "Configuration summary:"
-    echo "  Timezone: $SELECTED_TIMEZONE"
     echo "  Locale: $SELECTED_LOCALE"
     echo "  Keymap: $SELECTED_KEYMAP"
     echo "  Hostname: $(cat /mnt/etc/hostname)"
     echo ""
-    echo "Next steps:"
-    echo "  1. Set up bootloader: ./grub-setup.sh"
-    echo "  2. Create user account: ./user-setup.sh"
+    echo "Locale and language configuration is now complete."
     echo "========================================================="
 }
 
