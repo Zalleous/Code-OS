@@ -8,7 +8,6 @@ sudo systemctl enable acpid
 sudo pacman -S tp_smapi tlp
 sudo systemctl enable tlp
 sudo pacman -S xf86-input-synaptics xf86-input-libinput
-sudo pacman -S linux-firmware
 sudo pacman -S b43-fwcutter
 sudo pacman -S fprintd
 
