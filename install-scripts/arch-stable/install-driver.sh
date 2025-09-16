@@ -1,6 +1,6 @@
 sudo pacman -Sy --noconfirm
 
-xargs -r sudo pacman -S --noconfirm --needed < packages.txt
+xargs -r sudo pacman -S --noconfirm --needed < ./packages.txt
 
 sudo systemctl enable NetworkManager
 
