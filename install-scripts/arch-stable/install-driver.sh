@@ -12,8 +12,6 @@ sudo modprobe -a thinkpad_acpi tp_smapi
 lspci -k
 lsusb
 
-clear
-
 echo "=== Hardware Detection ==="
 lspci -k | grep -A 3 VGA
 
