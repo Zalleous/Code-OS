@@ -1,0 +1,23 @@
+base-devel
+xf86-video-intel 
+mesa lib32-mesa
+intel-media-driver 
+libva-intel-driver
+alsa-utils
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+pipewire-audio
+wireplumber
+networkmanager 
+wpa_supplicant
+acpi
+acpid 
+thinkfan
+tp_smapi
+tlp
+xf86-input-synaptics
+xf86-input-libinput
+b43-fwcutter
+fprintd
